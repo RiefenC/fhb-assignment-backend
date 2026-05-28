@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Node.js einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
 
@@ -30,3 +30,44 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
+
+  docker:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v5
+
+      - name: Bei GitHub Container Registry anmelden
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker-Image bauen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: |
+            ghcr.io/riefenc/fhb-assignment-backend:1.0.${{ github.run_number }}
+            ghcr.io/riefenc/fhb-assignment-backend:latest
+
+      - name: Image mit Trivy auf Sicherheitsluecken pruefen
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/riefenc/fhb-assignment-backend:1.0.${{ github.run_number }}
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Image in die Registry pushen
+        run: |
+          docker push ghcr.io/riefenc/fhb-assignment-backend:1.0.${{ github.run_number }}
+          docker push ghcr.io/riefenc/fhb-assignment-backend:latest
