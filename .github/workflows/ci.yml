@@ -21,6 +21,9 @@ jobs:
       - name: Abhängigkeiten installieren
         run: npm ci
 
+      - name: ESLint ausfuehren
+        run: npm run lint
+
       - name: Tests mit Coverage ausfuehren
         run: npm test -- --coverage
 
