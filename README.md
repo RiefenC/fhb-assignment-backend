@@ -18,3 +18,5 @@ npm start
 ```bash
 npm run dev
 ```
+
+<!-- Quality-Gates-Demo: Test der konfigurierten Pflicht-Checks -->
