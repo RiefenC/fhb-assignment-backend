@@ -47,3 +47,9 @@ test("DELETE /api/notes/:id entfernt eine Notiz", async () => {
   const allNotes = await api.get("/api/notes");
   expect(allNotes.body).toHaveLength(2);
 });
+
+test("GET /health liefert Status ok", async () => {
+  const response = await api.get("/health").expect(200);
+
+  expect(response.body.status).toBe("ok");
+});
